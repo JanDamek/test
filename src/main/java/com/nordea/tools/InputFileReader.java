@@ -2,45 +2,29 @@ package com.nordea.tools;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.BreakIterator;
-import java.text.CharacterIterator;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.NoSuchElementException;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class InputFileReader implements Iterator<String> {
 
-    private BreakIterator sentenceInstance;
-    private int next = 0;
-    private CharacterIterator ci;
-    private int proxim;
+    private final Scanner scanner;
 
     public InputFileReader(final File inputFile) throws IOException {
-        sentenceInstance = BreakIterator.getSentenceInstance(Locale.US);
-        ci = new StreamCharacterIterator(inputFile);
-        sentenceInstance.setText(ci);
-        next = sentenceInstance.first();
-        proxim = sentenceInstance.next();
+        scanner = new Scanner(inputFile, StandardCharsets.UTF_8);
+        scanner.useLocale(Locale.US);
+        scanner.useDelimiter(Pattern.compile("[.!?]",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE));
     }
 
     @Override
     public boolean hasNext() {
-        return proxim > next;
+        return scanner.hasNext();
     }
 
     @Override
     public String next() {
-        if (next == proxim) {
-            throw new NoSuchElementException();
-        }
-        var substring = new StringBuilder();
-        ci.setIndex(next);
-        while (next <= proxim) {
-            substring.append(ci.next());
-            next++;
-        }
-        next = proxim;
-        proxim = sentenceInstance.next();
-        return substring.toString();
+        return scanner.next();
     }
 }

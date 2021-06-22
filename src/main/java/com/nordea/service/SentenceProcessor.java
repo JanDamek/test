@@ -26,19 +26,19 @@ public class SentenceProcessor {
 
     @LogTime
     public void process(Config config) throws IOException {
-        InputFileReader fileReader = new InputFileReader(config.getInputFile());
+        var fileReader = new InputFileReader(config.getInputFile());
         while (fileReader.hasNext()) {
-            Sentence sentence = parseSentence(fileReader.next());
-            repository.saveNew(sentence);
+            repository.saveNew(parseSentence(fileReader.next()));
         }
+        repository.close();
         config.getOutputFormats().forEach(f -> exportService.export(f, config.getOutputFileName()));
     }
 
     private Sentence parseSentence(String inputSentence) {
-        Sentence result = new Sentence(new LinkedList<>());
+        var result = new Sentence(new LinkedList<>());
         wb.setText(inputSentence);
 
-        int last = 0;
+        var last = 0;
         int current = wb.next();
         while (current != BreakIterator.DONE) {
             processWord(result, inputSentence.substring(last, current));
